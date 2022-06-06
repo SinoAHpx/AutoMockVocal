@@ -4489,5 +4489,6 @@ Future<void> readConfig() async {
 }
 
 Future<void> writeConfig() async {
-  await DataBus.configFile.writeAsString(jsonEncode(DataBus.toJson()));
+  var toWrite = jsonEncode(DataBus.toJson());
+  await DataBus.configFile.writeAsString(toWrite);
 }

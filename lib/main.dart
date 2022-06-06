@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:auto_mock_vocal/models/exceptions.dart';
 import 'package:auto_mock_vocal/utils/data.dart';
@@ -6,23 +7,45 @@ import 'package:auto_mock_vocal/utils/network.dart';
 import 'package:desktop_window/desktop_window.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:input_slider/input_slider.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'components/setting_components.dart';
 
 Future<void> main() async {
-  if (await DataBus.configFile.exists()) {
-    await readConfig();
-  } else {
-    await writeConfig();
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    if (await DataBus.configFile.exists()) {
+      await readConfig();
+    } else {
+      await writeConfig();
+    }
+  } catch (e) {
+    await FlutterPlatformAlert.playAlertSound();
+
+    var action = await FlutterPlatformAlert.showAlert(
+        windowTitle: "Oops!",
+        text:
+            "error: ${e.toString()}, maybe delete config file could help, would you? yes: delete it, no: bring me to it(you may have to restart the app manually)",
+        alertStyle: AlertButtonStyle.yesNo);
+    //yesButton and noButton
+    if (action.name == "yesButton") {
+      await DataBus.configFile.delete();
+      await writeConfig();
+      await readConfig();
+    } else {
+      launchUrlString(DataBus.configFile.path);
+    }
   }
 
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: AutoMockVocal(),
   ));
+
   if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
     await DesktopWindow.setWindowSize(const Size(810, 510));
   }

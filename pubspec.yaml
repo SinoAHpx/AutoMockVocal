@@ -18,6 +18,7 @@ dependencies:
   progress_state_button: ^1.0.4
   url_launcher: ^6.1.2
   fluttericon: ^2.0.0
+  flutter_platform_alert: ^0.2.7
 
 dev_dependencies:
   flutter_test:
